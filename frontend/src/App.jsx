@@ -1,19 +1,20 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
 import './index.css'
-import {Header} from "../src/components";
-import {Footer} from "../src/components";
-
+import { Navbar } from "../src/components";
+import { Footer } from "../src/components";
+import { Header } from "../src/components";
 
 function App() {
   return (
     <div className='mx-4 sm:mx-[10%]'>
-      <Header/>
+      <Navbar />
+
       <main>
 
         <Outlet />
       </main>
-      <Footer/>
+      <Footer />
     </div>
   )
 }

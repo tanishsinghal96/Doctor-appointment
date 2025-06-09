@@ -6,5 +6,5 @@ import Doctors from "./Doctors";
 import Login from "./Login";
 import MyAppointments from "./MyAppointments";
 import MyProfile from "./MyProfile";
-
-export {About,Appoinment,Contact,Home,Login,Doctors,MyAppointments,MyProfile};
+import { TopDoctors } from "../components";
+export {About,Appoinment,Contact,Home,Login,Doctors,MyAppointments,MyProfile,TopDoctors};

@@ -1,9 +1,12 @@
 import React from 'react'
+import { Header, TopDoctors ,SpeicalityMenu} from '../components'
 
 function Home() {
   return (
-    <div className='text-green-500'>
-      kaise ho bhai
+    <div >
+      <Header/>
+      <SpeicalityMenu/>
+      <TopDoctors/>
     </div>
   )
 }
