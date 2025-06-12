@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { RouterProvider, createBrowserRouter } from "react-router-dom"
 import App from './App.jsx'
-
+import { AppContextProvider } from './context/AppContext.jsx'
 import {About,Appoinment,Contact,Home,Login,Doctors,MyAppointments,MyProfile} from  './pages/index.js'
 
 const router = createBrowserRouter([{
@@ -23,7 +23,7 @@ const router = createBrowserRouter([{
       element: <Contact />
     },
     {
-      path: "/appointments/:doctorId",
+      path: "/appointments/:id",
       // Assuming doctorId is a dynamic parameter in the URL
       // You can access it in the Appointment component using useParams hook
       element: <Appoinment />
@@ -33,7 +33,7 @@ const router = createBrowserRouter([{
         element: <Doctors />
     },
     {
-      path: "/doctors/:specialization",
+      path: "/doctors/:speciality",
       // Assuming specialization is a dynamic parameter in the URL
       // You can access it in the Doctors component using useParams hook
       // This will render the Doctors component based on the specialization
@@ -58,7 +58,10 @@ const router = createBrowserRouter([{
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppContextProvider>
+      <RouterProvider router={router} />
+    </AppContextProvider>
+    
 
   </StrictMode>,
 )

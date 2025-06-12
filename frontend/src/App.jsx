@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom'
 import './index.css'
 import { Navbar } from "../src/components";
 import { Footer } from "../src/components";
-import { Header } from "../src/components";
 
 function App() {
   return (

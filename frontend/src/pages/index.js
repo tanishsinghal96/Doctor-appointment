@@ -7,4 +7,6 @@ import Login from "./Login";
 import MyAppointments from "./MyAppointments";
 import MyProfile from "./MyProfile";
 import { TopDoctors } from "../components";
-export {About,Appoinment,Contact,Home,Login,Doctors,MyAppointments,MyProfile,TopDoctors};
+import {Banner} from "../components"
+import {RelatedDoctors} from "../components";
+export {About,Appoinment,Contact,Home,Login,Doctors,MyAppointments,MyProfile,TopDoctors,Banner,RelatedDoctors};
