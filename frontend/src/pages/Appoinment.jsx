@@ -40,7 +40,7 @@ function Appoinment() {
 
       //set the start date to 10 am
       if (today.getDate() === date.getDate()) {
-        date.setHours(today.getHours() > 10 ? (today.getHours() + 1) : 10); // Set to current time hours
+        date.setHours(today.getHours() > 9 ? (today.getHours() + 1) : 10); // Set to current time hours
         date.setMinutes(today.getMinutes() > 30 ? 30: 0,0,0); // Set to current time minutes
       }
       else {

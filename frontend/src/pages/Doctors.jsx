@@ -10,7 +10,7 @@ function Doctors() {
   const { doctors } = useAppContext();
   const navigate = useNavigate();
   const [filteredDoctors, setfilteredDoctors] = useState([]);
-
+ const [showFilters, setshowFilters] = useState(true)
 
   // Filter doctors based on speciality
   useEffect(() => {
@@ -38,32 +38,31 @@ function Doctors() {
 
       {/* Specialties List */}
       <div className="flex flex-col sm:flex-row items-start  gap-5 mt-5">
-        {/* <div className="flex flex-col gap-4 text-sm text-gray-600" onClick={(e) => speciality===e.target.textContent ? navigate('/doctors') : navigate(`/doctors/${e.target.textContent}`)}>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>General physician</p>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>Dermatologist</p>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>Gynecologist</p>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>Pediatricians</p>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>Neurologist</p>
-          <p className={`w-[94w] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer`}>Gastroenterologist</p>
-        </div> */}
-
-     <div className="flex flex-col gap-2">
-      {categories.map((category) => (
-        <p
-          key={category}
-        onClick={(e) => speciality===e.target.textContent ? navigate('/doctors') : navigate(`/doctors/${e.target.textContent}`)}
-          className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
-            speciality === category
-              ? "bg-indigo-100 text-black border-gray-500"
-              : ""
-          }`}
-        >
-          {category}
-        </p>
-      ))}
-    </div>
-
-        {/* Doctors List */}
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setshowFilters((prev) => !prev)}
+            className={` sm:hidden mb-2 px-4 py-2 rounded border border-indigo-400 bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-100 transition-all duration-200 w-fit`}
+          >
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
+          {showFilters && categories.map((category) => (
+            <p
+              key={category}
+              onClick={(e) =>
+                speciality === e.target.textContent
+                  ? navigate('/doctors')
+                  : navigate(`/doctors/${e.target.textContent}`)
+              }
+              className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
+                speciality === category
+                  ? "bg-indigo-100 text-black border-gray-500"
+                  : ""
+              }`}
+            >
+              {category}
+            </p>
+          ))}
+        </div>
         <div className="w-full grid grid-cols-auto sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
           {
           filteredDoctors.map((doctor, index) => (

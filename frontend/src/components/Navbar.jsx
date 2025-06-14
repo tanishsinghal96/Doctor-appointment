@@ -45,7 +45,30 @@ function Navbar() {
             </div>
           </div>
         ):(<button onClick={() => {navigate('/login')}} className='bg-primary text-white px-8 py-3 rounded-full  font-light hidden md:block '>Create Account</button>)}
-
+        
+        <button className='md:hidden' onClick={() => setshowMenu(!showMenu)}>
+          <img src={assets.menu_icon} alt="" className='w-6' />   
+          {
+            showMenu && (
+              <div className='absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 w-48 z-10'>
+                <ul className='flex flex-col gap-2 text-gray-600 font-medium'>
+                  <NavLink to='/'>
+                    <li className='py-1'><p>Home</p></li>
+                  </NavLink>
+                  <NavLink to="/doctors">
+                    <li className='py-1'><p>All doctors</p></li>
+                  </NavLink>
+                  <NavLink to="/about">
+                    <li className='py-1'><p>About</p></li>
+                  </NavLink>
+                  <NavLink to="/contact">
+                    <li className='py-1'><p>Contact Us</p></li>
+                  </NavLink>
+                </ul>
+              </div>
+            )
+          }
+        </button>
       </div>
     </div>
   )
