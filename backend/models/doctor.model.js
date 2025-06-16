@@ -59,8 +59,8 @@ const doctorSchema=new Schema({
 
 
 //it is wrong beacusr we are using the this inside the arrow function so use the normal function
-doctorSchema.pre("save",async function (password){
-   if(!this.isModified(password)) next();
+doctorSchema.pre("save",async function (next){
+   if(!this.isModified("password")) next();
    this.password=await bcrypt.hash(this.password,10);//10 rounds it genrate the ecret key to hashed the password
    next();
 })

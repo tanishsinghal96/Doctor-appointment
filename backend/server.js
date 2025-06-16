@@ -36,3 +36,14 @@ connectdb()
 .catch((err)=>{
     console.log(err);   
 })
+
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    errors: err.errors || [],
+    data: null,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+  });
+});

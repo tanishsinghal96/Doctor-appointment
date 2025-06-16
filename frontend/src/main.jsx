@@ -59,7 +59,7 @@ const router = createBrowserRouter([{
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AppContextProvider>
-      <RouterProvider router={router} />
+      <RouterProvider router={router} /> 
     </AppContextProvider>
     
 
