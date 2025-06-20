@@ -3,13 +3,14 @@ import cors from 'cors'
 import 'dotenv/config'
 import connectdb from "./db/mongodb.js"
 import adminRouter from "./routes/adminRoute.js"
+import doctorRouter from "./routes/doctor.route.js"
 const app=express();
 const port=process.env.PORT ||8000
 
 //middlewares
 app.use(cors({
-
-}))
+    origin:process.env.CORS_ORIGIN
+    }))
 
 app.use(express.json({
     limit:"16kb"     
@@ -18,11 +19,9 @@ app.use(express.json({
 //api endpoints    
 
 app.use("/api/v1/admin",adminRouter);
+app.use("/api/v1/doctor",doctorRouter);
 
 
-app.get('/',(req,res)=>{
- res.send("app is chaluu hai bh")    
-})
 connectdb()
 .then (()=>{
     app.on("error",(error)=>{

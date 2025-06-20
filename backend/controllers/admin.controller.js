@@ -12,6 +12,7 @@ const adddoctor=asyncHandler(async (req,res)=>{
     if([name,email,password,speciality,degree,experience,about,fees,address].some((field)=>(!field||field.trim()===""))){
         throw new ApiError(400,"all fields are required");
     }
+    
     //valid email and strong password check
     if(!validator.isEmail(email)){
         throw new ApiError(400,"valid emails are required");
@@ -54,23 +55,68 @@ const adddoctor=asyncHandler(async (req,res)=>{
 
 });
 
+
 const loginadmin=asyncHandler(async(req,res)=>{
     //login the admin write step to follow
     //get the email and password
     //validate both and verified
     //if yes then generate the token and send in the response
     const {email,password}=req.body;
-
+    console.log(email,password);
     if(!email||!password) throw new ApiError(400,"email and password both are required")
+    console.log("after verify1ng the email and password");
     if(email.trim()!==process.env.ADMIN_EMAIL||password.trim()!==process.env.ADMIN_PASS){
-        throw new ApiError(404,"wrong credentials")
+        throw new ApiError(400,"wrong credentials")
     }
-
+    console.log("after verify1ng the email and password  2");
+     
     const token =jwt.sign(email+password,process.env.JWT_SECRET);
     if(!token)  throw new ApiError(500,"error when generatign the token")
-
-    return res.status(200).json(new ApiResponse(200,{token},"successfully logged in the admin"));
+    console.log(token);
+    return res.status(200).json(new ApiResponse(200,{atoken:token},"successfully logged in the admin"));
 
 })
 
-export {adddoctor,loginadmin};
+//to send the all doctors
+const getAllDoctors=asyncHandler(async(req,res)=>{
+    //applied the autAdmin to it for verify the Admin
+    //get all the doctros from the dtabase and remove the sensitive details like password
+    const doctors=await doctorModel.find({}).select("-password -__v");
+    if(!doctors||doctors.length===0) throw new ApiError(404,"no doctors found");
+    return res.status(200).json(new ApiResponse(200,doctors,"successfully fetched all doctors"));
+})
+
+const toggleDoctorAvailability = asyncHandler(async (req, res) => {
+  const { doctorId } = req.params;
+  const { available } = req.body;
+  
+ 
+  console.log("Toggle Doctor Availability Request:", { doctorId, available });
+  //all print the type of these
+    console.log("Type of doctorId:", typeof doctorId);
+    console.log("Type of available:", typeof available);
+  if (typeof available === 'string') {
+  available = available.toLowerCase() === 'true';
+}
+  // Find the doctor by ID and update their availability
+  const doctor = await doctorModel.findByIdAndUpdate(
+    doctorId,
+    { available },
+    { new: true }
+  );
+
+  // If doctor not found, return error
+  if (!doctor) {
+    throw new ApiError(404, "Doctor not found");
+  }
+
+  // Return the updated doctor information
+ 
+    return res.status(200).json(
+        new ApiResponse(200, doctor, "Doctor availability updated successfully"));
+        
+});
+
+
+
+export {adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability};

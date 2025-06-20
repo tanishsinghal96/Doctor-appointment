@@ -54,7 +54,7 @@ const router = createBrowserRouter([{
       element: <MyProfile />
     }
   ]
-},])
+},]) 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
