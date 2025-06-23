@@ -4,6 +4,8 @@ import 'dotenv/config'
 import connectdb from "./db/mongodb.js"
 import adminRouter from "./routes/adminRoute.js"
 import doctorRouter from "./routes/doctor.route.js"
+import userRouter from "./routes/user.route.js"
+
 const app=express();
 const port=process.env.PORT ||8000
 
@@ -20,7 +22,7 @@ app.use(express.json({
 
 app.use("/api/v1/admin",adminRouter);
 app.use("/api/v1/doctor",doctorRouter);
-
+app.use("/api/v1/user",userRouter);
 
 connectdb()
 .then (()=>{

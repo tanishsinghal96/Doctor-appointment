@@ -1,7 +1,7 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import doctorModel from "../models/doctor.model.js";
 import { ApiError } from "../utils/apiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 const getAllDoctors=asyncHandler(async(req,res)=>{
     //applied the autAdmin to it for verify the Admin
     //get all the doctros from the dtabase and remove the sensitive details like password

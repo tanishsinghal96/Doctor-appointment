@@ -1,22 +1,17 @@
-import React from 'react'
-import { useState } from 'react'
-import {assets} from '../assets/assets';
+import React, { use } from 'react'
+import { useState,useEffect } from 'react'
+import { assets } from '../assets/assets';
+import useAppContext from '../context/AppContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 function MyProfile() {
-  const [userData, setUserData] = useState({
-    name: "Edward Vincent",
-    image: assets.profile_pic,
-    email: 'richardjameswap@gmail.com',
-    phone: '+1 123 456 7890',
-    address: {
-      line1: "57th Cross, Richmond",
-      line2: "Circle, Church Road, London"
-    },
-    gender: 'Male',
-    dob: '2000-01-20'
-  });
 
+  const { userData, setUserData, backendUrl, token,fetchUserData } = useAppContext();
   const [isEdit, setIsEdit] = useState(false);
-   const handleChange = (e) => {
+  const [image, setImage] = useState(userData?.image || null);
+  
+  
+  const handleChange = (e) => {
     const { name, value } = e.target;
 
     if (name === 'line1' || name === 'line2') {
@@ -35,6 +30,65 @@ function MyProfile() {
     }
   };
 
+
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Here you would typically send the updated userData to your backend
+    // using axios:
+    const formData = new FormData();
+    formData.append('name', userData.name);
+    formData.append('email', userData.email);
+    formData.append('phone', userData.phone);
+    formData.append('gender', userData.gender);
+    console.log("type of date object is ....-->",typeof userData.dob);
+    formData.append('dob', userData.dob);
+    formData.append('address',JSON.stringify({ line1:userData.address.line1, line2:userData.address.line2 }));
+
+    if (image && image !== userData.image) {
+      formData.append('image', image);
+    }
+    const updatedData = formData;
+    // If image is selected, update it
+    try {
+      const { data } = await axios.patch(`${backendUrl}/api/v1/user/update-profile`, updatedData, {
+        headers: {
+          token: token
+        }
+      });
+      if (data.success) {
+        toast.success("Profile updated successfully");
+        await fetchUserData()
+        setIsEdit(false);
+        setImage(false);
+
+      }
+      else {
+        toast.error(data.message || "Failed to update profile");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+
+    }
+
+
+  };
+
+  useEffect(() => {
+    // Fetch user data if token is available
+   if(userData){
+    setImage(userData.image);
+   }
+   else{
+    console.log("userData is not available");
+   }
+  }, [userData]);     
+
+
+  if (!userData) {
+    return <div style={{ textAlign: 'center', marginTop: '2rem' }}>Loading...</div>;
+  }
+ 
   return (
     <div style={{
       maxWidth: '500px',
@@ -44,9 +98,26 @@ function MyProfile() {
       boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
       background: '#fff'
     }}>
+
+
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        {isEdit && (
+          <input
+            type="file"
+            name="image"
+            onChange={(e) => { setImage(e.target.files[0]) }}
+            placeholder="Image URL"
+            style={{
+              width: '100%',
+              padding: '8px',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              marginBottom: '1rem'
+            }}
+          />
+        )} 
         <img
-          src={userData.image}
+          src={image instanceof File ? URL.createObjectURL(image) :  userData?.image || assets.profile_pic}
           alt="Profile"
           style={{
             width: 100,
@@ -57,11 +128,12 @@ function MyProfile() {
             border: '3px solid #e0e0e0'
           }}
         />
+
         <h2 style={{ margin: 0 }}>{userData.name}</h2>
         <p style={{ color: '#888', margin: 0 }}>{userData.email}</p>
       </div>
-       
-      <form style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }} onSubmit={e => e.preventDefault()}>
+
+      <form style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }} onSubmit={handleSubmit}>
         <div>
           <label style={{ fontWeight: 500 }}>Name</label>
           {isEdit ? (
@@ -161,7 +233,7 @@ function MyProfile() {
               type="date"
               name="dob"
               value={userData.dob}
-              onChange={handleChange}
+              onChange={()=>(onchange,console.log("date changed",typeof userData.dob,userData.dob))}
               style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc', marginTop: 4 }}
             />
           ) : (
@@ -169,24 +241,30 @@ function MyProfile() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsEdit(!isEdit)}
-          style={{
-            marginTop: '1.5rem',
-            padding: '10px 0',
-            background: isEdit ? '#1976d2' : '#43a047',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: 600,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            transition: 'background 0.2s'
-          }}
-        >
-          {isEdit ? 'Save' : 'Edit'}
-        </button>
+<button
+  type={isEdit ? 'submit' : 'button'}
+  onClick={(e) => {
+    if (!isEdit) {
+      e.preventDefault(); // Prevent form submission when switching to edit mode
+      setIsEdit(true);
+    }
+  }}
+  style={{
+    marginTop: '1.5rem',
+    padding: '10px 0',
+    background: isEdit ? '#1976d2' : '#43a047',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontWeight: 600,
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'background 0.2s'
+  }}
+>
+  {isEdit ? 'Save' : 'Edit'}
+</button>
+
       </form>
     </div>
   );

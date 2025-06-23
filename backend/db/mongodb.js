@@ -9,7 +9,7 @@ const connectDb=async()=>{
 
         const connectionInstance=await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`)
         console.log(`\n mongodb connected !! db host:${connectionInstance.connection.host}`)//reason fo this console is given below
-    } catch (error) {
+    } catch (err) {
         console.log("mongodb error:",err)
     process.exit(1)//process is given for each file 
     }

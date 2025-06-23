@@ -8,6 +8,8 @@ export const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
   const backendUrl=import.meta.env.VITE_BACKEND_URL;
   const [doctors, setDoctors] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
+  const [userData, setUserData] = useState(null);
   let currencySymbol= "₹";
 
    const fetchDoctorsList = async () => {
@@ -33,13 +35,48 @@ export const AppContextProvider = ({ children }) => {
 
    useEffect(()=>{
     fetchDoctorsList();
-   });
+   },[]);
 
+   const fetchUserData = async () => {
+        try {
+          const {data}= await axios.get(`${backendUrl}/api/v1/user/get-profile`,{
+            headers:{
+              token:token,
+            }
+          })
+          if (data.success) {
+            setUserData(data.data);
+            console.log("type fo the fetched date of birth", typeof data.data.dob);
+            console.log("User data fetched successfully:", data.data);
+          } else {
+            toast.error("Failed to fetch user data. Please try again later.");
+            console.error("Failed to fetch user data:", data.message);
+          }
+        } catch (error) {
+          toast.error("Failed to fetch user data. Please try again later.");
+          console.error("Error fetching user data:", error.response?.data?.message || error.message);
+          
+        }
+   }
+
+
+   useEffect(() => {
+    // Fetch user data if token is available
+    if (token) {
+      fetchUserData();//only fetch when token available or user is logged in 
+    }}, [token]);
+ 
   const value = {
     // Define your context values here
     doctors: doctors,
+    fetchDoctorsList,
     currencySymbol: currencySymbol,
-    backendUrl
+    backendUrl,
+    token,
+    setToken,
+    userData,
+    setUserData,
+    fetchUserData
   };
 
   return (

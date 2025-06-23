@@ -4,21 +4,32 @@ import { useState, useEffect } from 'react'
 import useAppContext from '../context/AppContext.jsx'
 import { assets } from '../assets/assets.js'
 import {RelatedDoctors} from './index.js'
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 function Appoinment() {
   const { id } = useParams();
-  const { doctors, currencySymbol } = useAppContext();
-  const [docInfo, setdocInfo] = useState(null)
+  const { doctors, currencySymbol,backendUrl,token,fetchDoctorsList } = useAppContext();
+  const [docInfo, setdocInfo] = useState(null);
+  
   const [docSlots, setDocSlots] = useState([]);
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState('');
+
+  const navigate = useNavigate();
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
   const fetchInfo = async () => {
-    const doc_Info = doctors.find((doctor) => (doctor._id === id))
+    const doc_Info = await doctors.find((doctor) => (doctor._id === id))
     console.log(doc_Info);
     if (doc_Info) {
       setdocInfo(doc_Info);
     } else {
-      console.error("Doctor not found");
+      toast.error("Doctor not found for the given id")
+      setdocInfo(null);
+      navigate('/'); // Redirect to home if doctor not found
+      console.log("Doctor not found for id ", id);
+      return ;
     }
   }
 
@@ -27,12 +38,12 @@ function Appoinment() {
     if (!docInfo) return;
     //get the current date
     const today = new Date();
-
+    
     // Loop through the next 7 days
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() + i);
-
+      
       //set the end time  to 9 pm 
       const endDate = new Date();
       endDate.setDate(today.getDate() + i);
@@ -55,13 +66,20 @@ function Appoinment() {
         const formattedDate = date.toLocaleString([], {
           hour: "2-digit", minute: "2-digit"
         });
+        //check if slot time for slot date is already booked or not
+        let format= `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+        if( docInfo.slots_Booked && docInfo.slots_Booked[format] && docInfo.slots_Booked[format].includes(formattedDate)) {
+          // If the slot is already booked, skip to the next slot
+          date.setMinutes(date.getMinutes() + 30); 
+          continue;
+        }
         // Push the formatted date and time to the slots array
         timeSlot.push({
           dateTime: new Date(date),
           time: formattedDate,
         });
         // Increment the time by 30 minutes
-        date.setMinutes(date.getMinutes() + 30);
+        date.setMinutes(date.getMinutes() + 30); 
       }
 
 
@@ -76,17 +94,61 @@ function Appoinment() {
 
   }
 
+  //now book the appointment
+   const bookAppointment = async () => {
+      //first slot time and slot index should be selected
+      if (!slotTime || slotIndex < 0) {
+      toast.warn("Please select a slot time and date");
+        return;
+      }
+
+      //now we will make the slot_date from the index and docSlots
+      const slotDate = docSlots[slotIndex][0].dateTime;
+      //now we will make the backend request 
+      try {
+        const {data}=await axios.post(`${backendUrl}/api/v1/user/book-appointment`, {
+          docId: id,
+          slotDate: slotDate,
+          slotTime: slotTime,
+        }, {
+          headers: {
+            token: token,
+          }
+        });    
+  
+        if (data.success) {
+          toast.success("Appointment booked successfully");
+          //now we will update the doctor slots also
+          setSlotTime('');
+          setSlotIndex(0);
+          //fetch the doctors list again to update the slots  
+          fetchDoctorsList();
+        }
+        else {
+          toast.error(data.message || "Failed to book appointment. Please try again later.");
+          console.error("Failed to book appointment:", data.message);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
+        console.log("Error booking appointment:", error.response?.data?.message || error.message);
+        
+      }
+   }
+
   useEffect(() => {
     getDocSlots();
   }, [docInfo]);
 
   useEffect(() => {
+    if(!docSlots.length) return;
     console.log(docSlots);
-  }, [docSlots])
+  }, [docSlots]) 
 
   useEffect(() => {
+    if(!id || !doctors || !doctors.length) return;
     fetchInfo();
   }, [id, doctors]);
+  
 
 
   return docInfo && (
@@ -161,7 +223,7 @@ function Appoinment() {
             ))
           }
         </div>
-        <button className='bg-primary text-white text-sm font-light px-14 py-3 my-6 rounded-full  '>Book an appointment</button>
+        <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 my-6 rounded-full  '>Book an appointment</button>
       </div>
 
      {/* Listign the related doctors */}

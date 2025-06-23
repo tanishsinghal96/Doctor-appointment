@@ -1,6 +1,6 @@
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/apiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import doctorModel from "../models/doctor.model.js"
@@ -84,7 +84,7 @@ const getAllDoctors=asyncHandler(async(req,res)=>{
     const doctors=await doctorModel.find({}).select("-password -__v");
     if(!doctors||doctors.length===0) throw new ApiError(404,"no doctors found");
     return res.status(200).json(new ApiResponse(200,doctors,"successfully fetched all doctors"));
-})
+}) 
 
 const toggleDoctorAvailability = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;

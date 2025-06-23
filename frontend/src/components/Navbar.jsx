@@ -2,10 +2,18 @@ import React, { useState } from 'react'
 import { assets } from '../assets/assets.js'
 import { NavLink } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import useAppContext from '../context/AppContext'
 function Navbar() {
   const navigate = useNavigate();
-  const [token, settoken] = useState(true);
-  const [showMenu, setshowMenu] = useState(false)
+  const { token, setToken,userData } = useAppContext();
+  const [showMenu, setshowMenu] = useState(false);
+  
+  const logouthandler = () => {
+    setToken(null);
+    localStorage.removeItem('token');
+    navigate('/');
+  }
+
   return (
     <div className='flex items-center justify-between bg-white p-4 shadow-md text-sm py-4 mb-5 border-b border-b-gray-400'>
       <img className="cursor-pointer w-44" src={assets.logo} alt="" />
@@ -30,21 +38,22 @@ function Navbar() {
           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
         </NavLink>
 
-      </ul>
+      </ul> 
+
       <div className='flex items-center gap-4'>
-        {token?(
+        {token&&userData?(
           <div className='flex items-center gap-2 relative cursor-pointer group' >
-            <img src={assets.profile_pic}  alt="" className='w-8 rounded-full' />
+            <img src={userData.image}  alt="" className='w-8 rounded-full' />
             <img src={assets.dropdown_icon} alt="" className='w-2.5' />
             <div className='absolute top-0 right-0 pt-14 text-base  font-medium text-gray-600 z-20 hidden group-hover:block'>
               <div className='min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4'>
                 <p className='hover:text-black cursor-pointer' onClick={()=>navigate("/my-profile")}>my_profile</p>
                 <p className='hover:text-black cursor-pointer' onClick={()=>navigate("/my-appointments")}>my-appoinments</p>
-                <p className='hover:text-black cursor-pointer' onClick={()=>{settoken(false); navigate("/login")}}>logout</p>
+                <p className='hover:text-black cursor-pointer' onClick={logouthandler}>logout</p>
               </div>
             </div>
           </div>
-        ):(<button onClick={() => {navigate('/login')}} className='bg-primary text-white px-8 py-3 rounded-full  font-light hidden md:block '>Create Account</button>)}
+        ):(<button onClick={() => {navigate('/login')}} className='bg-primary text-white px-2 py-2 rounded-full  font-light  '>Create <br /> Account</button>)}
         
         <button className='md:hidden' onClick={() => setshowMenu(!showMenu)}>
           <img src={assets.menu_icon} alt="" className='w-6' />   

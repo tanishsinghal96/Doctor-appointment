@@ -48,7 +48,7 @@ const doctorSchema=new Schema({
         required:true
      },
     //  date:{
-    //     type:Number,
+    //     type:Number, 
     //     required:true
     //  },
      slots_Booked:{
