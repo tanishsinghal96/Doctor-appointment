@@ -26,6 +26,7 @@ function MyAppointments() {
           console.error("Error fetching appointments:", error.response?.data?.message || error.message);
         }
    }
+   
 
    const cancelHandler = async (id) => {
         try {

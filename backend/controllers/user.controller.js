@@ -108,7 +108,7 @@ const updateUserProfile=asyncHandler(async(req,res)=>{
         throw new ApiError(404, "User not found");
     }
     res.status(200).json(new ApiResponse(200,updatedUser,"User profile updated successfully"));
-})
+})  
 
 //API to book appointment 
 const bookAppointment = asyncHandler(async (req, res) => {

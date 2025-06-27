@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import { asyncHandler } from "../utils/asyncHandler.js";
 const authAdmin=asyncHandler(async (req,res,next)=>{
     const {atoken}=req.headers;//if we want to use the cookie then use the cooki-parser
+    console.log("Admin Auth Middleware");
     console.log(atoken);
     //now check the token is present or not get from the header or body or cookies
     if(!atoken) throw new ApiError(400,"not authorized admin")

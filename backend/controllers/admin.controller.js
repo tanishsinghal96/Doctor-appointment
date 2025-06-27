@@ -5,6 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import doctorModel from "../models/doctor.model.js"
 import validator from "validator"
+import Doctor from '../models/doctor.model.js';
+import Appointment from '../models/appointment.model.js';
 //api for the adding the doctors
 const adddoctor=asyncHandler(async (req,res)=>{
     const {name,email,password,speciality,degree,experience,about,fees,address}=req.body;
@@ -117,6 +119,62 @@ const toggleDoctorAvailability = asyncHandler(async (req, res) => {
         
 });
 
+const getAllAppointments=asyncHandler(async(req,res)=>{
+   const appointment=await  Appointment.find({}).populate("userId","name image gender dob").populate("docId","name image fees");
+   if(!appointment){
+      throw new ApiError(500,"failed while fetching");
+   }
+
+   res.status(200).json(new ApiResponse(200,appointment,"successfully fetched the appointment"));
+
+})
+
+ const cancelAppointment = asyncHandler(async (req, res) => {
+   console.log("Cancel Appointment Request Received");
+    const { appointmentId } = req.body; 
+    console.log("Cancel Appointment Request:", appointmentId); 
+    if (!appointmentId) {
+        throw new ApiError(400, "Please provide appointment ID");
+    }
+    //now find the appointment by the id and user id then update the appointment as the canceeld tue and in the docotr model als 
+    //in the doctor model we will remove the slot from the slotsBooked
+    
+    const appointment = await Appointment.findOne(
+        { _id: appointmentId },
+    );
+    if (!appointment) {
+        throw new ApiError(404, "Appointment not found or you do not have permission to cancel it");
+    } 
+
+    const doctor = await Doctor.findById(appointment.docId);
+    if (!doctor) {
+        throw new ApiError(404, "Doctor not found for this appointment");
+    }
+    console.log(appointment);
+    //now update the appointment as cancelled
+    appointment.cancelled = true;
+    appointment.isCompleted = false; // Assuming you want to mark it as not completed
+    await appointment.save();
+    console.log("Appointment cancelled:", appointment);
+    //now update the doctor model also
+    //for the slottime and slotDate we will remove the slot from the slotsBooked
+    const slotDate = appointment.slotDate; 
+    const slotTime = appointment.slotTime;
+    if (doctor.slots_Booked && doctor.slots_Booked[slotDate]) {
+        // Remove the slotTime from the slotsBooked
+        doctor.slots_Booked[slotDate] = doctor.slots_Booked[slotDate].filter(time => time !== slotTime);
+        // If no slots are left for that date, delete the date entry
+        if (doctor.slots_Booked[slotDate].length === 0) {
+            delete doctor.slots_Booked[slotDate];
+        }
+        doctor.markModified("slots_Booked");
+        await doctor.save();
+    } 
 
 
-export {adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability};
+
+
+    res.status(200).json(new ApiResponse(200, appointment, "Appointment cancelled successfully"));
+});
+
+export {adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability,getAllAppointments,cancelAppointment};

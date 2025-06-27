@@ -232,8 +232,8 @@ function MyProfile() {
             <input
               type="date"
               name="dob"
-              value={userData.dob}
-              onChange={()=>(onchange,console.log("date changed",typeof userData.dob,userData.dob))}
+              
+              onChange={handleChange}
               style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ccc', marginTop: 4 }}
             />
           ) : (

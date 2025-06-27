@@ -7,7 +7,7 @@ const AdminContextProvider=({children})=>{
    const [aToken,setAtoken]=useState(localStorage.getItem("aToken") || "");
    const backendUrl=import.meta.env.VITE_BACKEND_URL;
    const [DoctorsList, setDoctorsList] = useState([]);
-
+   const [appointmentData, setAppointmentData] = useState([]);
    // Set aToken from localStorage only once on mount
    //  useEffect(() => {
    //     console.log("AdminContextProvider mounted");
@@ -66,13 +66,38 @@ const AdminContextProvider=({children})=>{
     }
   };
 
+  const getAllAppointments=async()=>{
+   console.log("Fetching all appointments...");
+   try {
+      const {data}=await axios.get(`${backendUrl}/api/v1/admin/list-appointments`, {
+         headers: {
+            'aToken': aToken // Include the token in the request headers
+         }
+      });
+      if(data.success){
+         setAppointmentData(data.data);
+         console.log("Appointments fetched successfully:", data.data);
+      }
+      else{
+         toast.error("Failed to fetch appointments. Please try again later.");
+         console.error("Failed to fetch appointments:1", data.message);
+      }
+   } catch (error) {
+      console.error("Error fetching appointments:", error);
+      toast.error('Failed to fetch appointments', error.response?.data?.message || error.message);
+   }    
+  }
+
   
    let value={
       aToken,
       setAtoken,
       DoctorsList,
       fetchDoctorsList,
-      backendUrl
+      backendUrl,
+      handleToggleAvailability,
+      getAllAppointments,
+      appointmentData,
    }
 
 
