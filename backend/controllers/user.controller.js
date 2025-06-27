@@ -7,7 +7,7 @@ import {uploadOnCloudinary} from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import Doctor from '../models/doctor.model.js';
 import Appointment from '../models/appointment.model.js';
-
+import razorpay from 'razorpay'; // Import Razorpay for payment processing
 //not generate the token at the time of registration
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
@@ -188,4 +188,116 @@ const bookAppointment = asyncHandler(async (req, res) => {
 
 })
 
-export {  registerUser,loginUser,getUserProfile,updateUserProfile,bookAppointment };
+//API to list the all thw appointments
+const listAppointments = asyncHandler(async (req, res) => {
+    const { userId } = req; // Assuming you have middleware to set req.user
+    //now find the appointments from the userId
+    const appointments=await Appointment.find({userId}).populate('docId',"-password -__v").sort({date:-1});
+    if(!appointments) {
+        throw new ApiError(404, "No appointments found for this user");
+    }
+    res.status(200).json(new ApiResponse(200, appointments, "Appointments fetched successfully"));
+})
+
+//API to cancel the appointment
+ const cancelAppointment = asyncHandler(async (req, res) => {
+    const { userId } = req; // Assuming you have middleware to set req.user
+    const { appointmentId } = req.body;
+    
+    if (!appointmentId) {
+        throw new ApiError(400, "Please provide appointment ID");
+    }
+    //now find the appointment by the id and user id then update the appointment as the canceeld tue and in the docotr model als 
+    //in the doctor model we will remove the slot from the slotsBooked
+    
+    const appointment = await Appointment.findOne(
+        { _id: appointmentId },
+    );
+    if (!appointment || appointment.userId.toString() !== userId) {
+        throw new ApiError(404, "Appointment not found or you do not have permission to cancel it");
+    } 
+
+    const doctor = await Doctor.findById(appointment.docId);
+    if (!doctor) {
+        throw new ApiError(404, "Doctor not found for this appointment");
+    }
+    console.log(appointment);
+    //now update the appointment as cancelled
+    appointment.cancelled = true;
+    appointment.isCompleted = false; // Assuming you want to mark it as not completed
+    await appointment.save();
+    console.log("Appointment cancelled:", appointment);
+    //now update the doctor model also
+    //for the slottime and slotDate we will remove the slot from the slotsBooked
+    const slotDate = appointment.slotDate;
+    const slotTime = appointment.slotTime;
+    if (doctor.slots_Booked && doctor.slots_Booked[slotDate]) {
+        // Remove the slotTime from the slotsBooked
+        doctor.slots_Booked[slotDate] = doctor.slots_Booked[slotDate].filter(time => time !== slotTime);
+        // If no slots are left for that date, delete the date entry
+        if (doctor.slots_Booked[slotDate].length === 0) {
+            delete doctor.slots_Booked[slotDate];
+        }
+        doctor.markModified("slots_Booked");
+        await doctor.save();
+    } 
+
+
+
+
+    res.status(200).json(new ApiResponse(200, appointment, "Appointment cancelled successfully"));
+});
+
+const razorpayInstance = new razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
+//api for the payement
+const paymentRazorpay=asyncHandler(async(req,res)=>{
+    const {appointmentId}= req.body;
+    const appointmentData=await Appointment.findById(appointmentId);
+    if(!appointmentData||!appointmentData.amount){
+        throw new ApiError(404, "Appointment not found or cancel");
+    }
+
+    const options={
+        amount: appointmentData.amount * 100, // Amount in paise
+        currency: "INR",
+        receipt:appointmentId
+    }
+    
+    const order=await razorpayInstance.orders.create(options);
+    if(!order){
+        throw new ApiError(500, "Failed to create order");
+    }
+    res.status(200).json(new ApiResponse(200, order, "Order created successfully"));
+
+})
+
+//api to verify the payement
+const verifyPayment = asyncHandler(async (req, res) => {
+    const {razorpay_id} = req.body;
+    if (!razorpay_id) {
+        throw new ApiError(400, "Razorpay ID is required");
+    }
+    // Here you would typically verify the payment with Razorpay's API
+    const order_info=await razorpayInstance.orders.fetch(razorpay_id);
+    if (!order_info) {
+        throw new ApiError(404, "Order not found");
+    }
+    // Check if the order is paid
+    if (order_info.status !== 'paid') {
+        throw new ApiError(400, "Payment not successful");
+    }   
+    // If payment is successful, you can update the appointment status or perform other actions
+    const appointment = await Appointment.findOneAndUpdate({_id:order_info.receipt}, { payment: true }, { new: true });
+    if (!appointment) {
+        throw new ApiError(404, "Appointment not found");
+    }
+    res.status(200).json(new ApiResponse(200, appointment, "Payment verified successfully"));
+    
+
+})
+
+export {  registerUser,loginUser,getUserProfile,updateUserProfile,bookAppointment,listAppointments,cancelAppointment,paymentRazorpay,verifyPayment};
