@@ -3,8 +3,8 @@ import useAppContext from '../context/AppContext'
 import { Link, useNavigate } from 'react-router-dom';
 
 function RelatedDoctors({docId,speciality}) {
-    const { doctors } = useAppContext();
-    const navigate = useNavigate();
+  const { doctors } = useAppContext();
+  const navigate = useNavigate();
   // Assuming you want to display related doctors based on some criteria    
   const [RelatedDoctors, setRelatedDoctors] = useState([]);
   useEffect(() => {

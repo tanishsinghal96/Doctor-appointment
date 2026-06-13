@@ -3,21 +3,24 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { DoctorContextProvider } from './context/DoctorContext.jsx'
-import { AdminContextProvider } from './context/AdminContext.jsx'
+import { AdminContextProvider } from './context/adminContext.jsx'
 import { AppContextProvider } from './context/AppContext.jsx'
 import { createBrowserRouter,RouterProvider } from 'react-router-dom'
 import AddDoctor from './pages/admin/AddDoctor.jsx'
 import AllApoointments from './pages/admin/AllApoointments.jsx' 
 import DoctorsList from './pages/admin/DoctorsList.jsx'
 import DashBoard from './pages/admin/DashBoard.jsx'
+import DoctorDashboard from './pages/doctor/DoctorDashboard.jsx'
+import DoctorProfile from './pages/doctor/DoctorProfile.jsx'
+import DoctorAppointments from './pages/doctor/DoctorAppointments.jsx'
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />, 
     children: [
       {
-        path: "/",
-        index: true,
+       index: true,
+       
       },
       {
         path: "/add-doctor",
@@ -34,7 +37,20 @@ const router = createBrowserRouter([
       {
         path: "/admin-dashboard",
         element: <DashBoard />
+      },
+      {
+        path:"/doctor-dashboard",
+        element: <DoctorDashboard />
+      },
+      {
+        path:"/doctor-profile",
+        element:<DoctorProfile/>
+      },
+      {
+        path:"/doctor-appointments",
+        element:<DoctorAppointments/>
       }
+
     ]
   }
 ])

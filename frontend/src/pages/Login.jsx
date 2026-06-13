@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const navigate = useNavigate();
   const { backendUrl,token,setToken } = useAppContext();
-  
   useEffect(() => {
     // Check if the user is already logged in
     const storedToken = localStorage.getItem('token');
@@ -38,8 +37,8 @@ function Login() {
       });
 
       const data = response.data;
-      console.log(data);
-      if (data.success) {
+      console.log(data);   
+      if (data.message === "Success") {
         // Save the token in local storage or context
         localStorage.setItem('token', data.data.token);
         setToken(data.data.token);
@@ -48,7 +47,7 @@ function Login() {
         navigate('/');
         
       } else {
-        console.log("mai harami hun ")
+        //console.log("mai harami hun ")
         toast.error(data.message);
       }
     } catch (error) {

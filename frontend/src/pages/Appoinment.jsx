@@ -15,7 +15,8 @@ function Appoinment() {
   const [docSlots, setDocSlots] = useState([]);
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState('');
-
+  const [rating, setRating] = useState(3);
+  const [review, setReview] = useState('');
   const navigate = useNavigate();
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -94,9 +95,16 @@ function Appoinment() {
 
   }
 
+
   //now book the appointment
    const bookAppointment = async () => {
       //first slot time and slot index should be selected
+    if(!token){
+      toast.warn("Please login to book an appointment");
+      navigate('/login');
+      return; 
+    }
+
       if (!slotTime || slotIndex < 0) {
       toast.warn("Please select a slot time and date");
         return;
@@ -133,6 +141,46 @@ function Appoinment() {
         console.log("Error booking appointment:", error.response?.data?.message || error.message);
         
       }
+   }
+
+   const addreview = async (e)=>{
+    e.preventDefault();
+    if(!token){
+      toast.warn("Please login to add a review");
+      navigate('/login');
+      return; 
+    }
+    if(!rating || rating < 1 || rating > 5){
+      toast.warn("Please provide a valid rating between 1 and 5");
+      return;
+    }
+    if(!review){
+      toast.warn("Please provide a review");
+      return;
+    }
+    try {
+      const {data} = await axios.post(`${backendUrl}/api/v1/user/add-review`, {
+        doctorId: id,
+        rating: rating,
+        comment: review,
+      }, {
+        headers: {
+          token: token,
+        }
+      });
+      if(data.success){
+        toast.success("Review added successfully");
+        setRating(3);
+        setReview('');
+        //fetch the doctor info again to update the reviews
+        fetchDoctorsList();
+      }else{
+        toast.error(data.message || "Failed to add review. Please try again later.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+      console.log("Error adding review:", error.response?.data?.message || error.message);
+    }
    }
 
   useEffect(() => {
@@ -226,10 +274,72 @@ function Appoinment() {
         <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 my-6 rounded-full  '>Book an appointment</button>
       </div>
 
-     {/* Listign the related doctors */}
-   <RelatedDoctors docId={id} speciality={docInfo.speciality} />
-    </div>
+      {/* ----------- Review of the doctor----------- */}
+      <div className='mt-10 px-4 py-6 bg-white rounded-xl shadow-md'>
+        <h2 className='text-xl font-semibold text-gray-900 mb-4 border-b pb-2'>Reviews</h2>
+        <div className='mt-4'>
+          {/* Map through reviews and display them */}
+          {docInfo.reviews && docInfo.reviews.length > 0 ? (
+            [...docInfo.reviews].reverse().map((review, index) => (
+              <div
+                key={index}
+                className='border border-gray-200 rounded-lg p-5 mb-4 bg-gray-50 hover:shadow transition-shadow flex flex-col gap-2'
+              >
+                <div className='flex items-center gap-3 mb-1'>
+                  <div className='w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg'>
+                    {review.patient.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className='font-medium text-gray-800'>{review.patient.name}</p>
+                    <p className='text-xs text-gray-400'>
+                      Rating: <span className='font-semibold text-yellow-500'>{review.rating} ★</span>
+                    </p>
+                  </div>
+                </div>
+                <p className='text-sm text-gray-700 italic border-l-4 border-primary pl-3'>{review.comment}</p>
+              </div>
+            ))
+          ) : (
+            <p className='text-gray-500 text-center py-6'>No reviews yet.</p>
+          )}
+        </div>
+        {/* add the review form here */}
+        <div className='mt-6'>
+          <h3 className='text-lg font-semibold text-gray-900 mb-3'>Add a Review</h3>
+          <form className='flex flex-col gap-4 ' onSubmit={addreview}>
+            <textarea
+              className='border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary'
+              rows='4'
+              placeholder='Write your review...'
+              required
+              maxLength='500'
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+            ></textarea>
+            <div className='flex items-center gap-3'>
+              <input
+                type='number'
+                min='1'
+                max='5'
+                placeholder='Rating (1-5)'
+                className='border border-gray-300 rounded-lg p-3 w-24 focus:outline-none focus:ring-2 focus:ring-primary'
+                required
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+              />
+              <button
+                type='submit'
+                className='bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors'
+              >
+                Submit Review
+              </button>
+            </div>
+          </form>
+        </div>
+        <RelatedDoctors docId={id} speciality={docInfo.speciality} />
+      </div>
 
+    </div>
 
   );
 }

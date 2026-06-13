@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { assets } from "../assets/assets"
 import axios from "axios"
 import useAdminContext from '../context/AdminContext'
+import useDoctorContext from '../context/DoctorContext'
 import { toast } from 'react-toastify'
 function Login() {
   const [state, setstate] = useState("Admin")
@@ -9,6 +10,7 @@ function Login() {
   const [password, setpassword] = useState("");
 
   const { setAtoken, backendUrl } = useAdminContext();
+  const { setDtoken } = useDoctorContext();
   
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -20,18 +22,22 @@ function Login() {
     //axios throw error goes to catch part
     try {
       if (state === "Admin") {
-        const  res  = await axios.post(backendUrl+'/api/v1/admin/login', { email, password });
-        console.log(res.data);
-        console.log(res.data.data.success);
-        if (res.data.success) {
-          console.log( res.data.data.atoken);
-          localStorage.setItem("aToken", res.data.data.atoken);
-          setAtoken(res.data.data.atoken);
+        const  {data}  = await axios.post(backendUrl+'/api/v1/admin/login', { email, password });
+        if (data.success) {
+          console.log( data.data.atoken);
+          localStorage.setItem("aToken", data.data.atoken);
+          setAtoken(data.data.atoken);
         }
         
       }
       else {
-
+        const  {data}  = await axios.post(backendUrl+'/api/v1/doctor/login', { email, password });
+        
+        if (data.success) {
+          console.log( data.data.dToken);
+          localStorage.setItem("dToken", data.data.dToken);
+          setDtoken(data.data.dToken);
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
@@ -51,7 +57,7 @@ function Login() {
           <p>Password</p>
           <input value={password} onChange={(e) => setpassword(e.target.value)} type="password" required className='border border-[#DADADA] rounded w-full p-2 mt-1' />
         </div>
-        <button className='bg-primary text-white w-full py-2 rounded-md text-base '>Login</button>
+        <button type='submit' className='bg-primary text-white w-full py-2 rounded-md text-base '>Login</button>
 
         {state === 'Admin'
           ? <p>Doctor Login? <span onClick={() => setstate("Doctor")} className='text-primary underline cursor-pointer'>Click Here</span></p>

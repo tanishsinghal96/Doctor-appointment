@@ -2,16 +2,22 @@ import React from 'react'
 import { assets } from "../assets/assets"
 import useAdminContext from '../context/adminContext'
 import { useNavigate } from 'react-router-dom'
+import useDoctorContext from '../context/DoctorContext'
 function Navbar() {
     const { aToken,setAtoken } = useAdminContext();
+    const { dToken, setDtoken } = useDoctorContext();
+
    const navigate=useNavigate();
     const logout = () => {
-    //  Optionally, you can also clear the token from the context state
-        aToken&&setAtoken(''); // Uncomment if you want to clear the context state as well   
+          navigate('/')
+    
+   
+     aToken&&setAtoken(''); // Uncomment if you want to clear the context state as well   
         aToken&&localStorage.removeItem("aToken"); 
-        navigate('/')
-    }
-
+        dToken&&setDtoken(''); // Uncomment if you want to clear the context state as well
+   dToken&&localStorage.removeItem("dToken");
+        
+        }
 
   return (
     <div className='flex justify-between items-center bg-white px-4 sm:px-10 py-3  shadow-md'>

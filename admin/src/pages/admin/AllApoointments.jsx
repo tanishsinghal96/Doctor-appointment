@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 function AllApoointments() {
     const {getAllAppointments, appointmentData,aToken,backendUrl} =  useAdminContext();
     const {calculateAge,formattedDate,currency} = useAppContext();
+    
     useEffect(() => {
        if(aToken)  getAllAppointments();
     }, [aToken]);
@@ -28,10 +29,7 @@ function AllApoointments() {
             }
           
           }
-            
-
-
-         catch (error) {
+          catch (error) {
           toast.error(error.response?.data?.message || error.message);
           console.log("Error cancelling appointment:", error.response?.data?.message || error.message);
           
@@ -70,6 +68,7 @@ function AllApoointments() {
                 <td className="px-6 py-4 whitespace-nowrap">{currency}{appointment.amount}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                 { appointment.cancelled  && <button className="bg-blue-500 text-white px-4 py-2 rounded">cancelled </button>}
+                { appointment.payment  && <button className="bg-blue-500 text-white px-4 py-2 m-2 rounded"> paid </button>}
                   {appointment.cancelled===false &&<button onClick={()=>cancelHandler(appointment._id)} className="bg-red-500 text-white px-4 py-2 rounded ml-2">cancel</button>  }
                 </td>
               </tr>

@@ -11,6 +11,10 @@ function DoctorsList() {
 
   useEffect(() => {
     // Fetch the doctors list when the component mounts
+    if(!aToken) {
+      toast.error("You are not authorized to view this page. Please log in.");
+      return;
+    }
     const fetchData = async () => {
       try {
         await fetchDoctorsList();

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(find c:\\\\\\\\Users\\\\\\\\91830\\\\\\\\Documents\\\\\\\\Documents\\\\\\\\FullStack\\\\\\\\Doctors_appointment\\\\\\\\backend -name \"*.model.js\" -o -name \"appointment.model.js\")",
+      "Bash(node --check server.js)"
+    ]
+  }
+}
