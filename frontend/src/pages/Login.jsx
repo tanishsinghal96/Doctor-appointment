@@ -7,13 +7,8 @@ function Login() {
   const navigate = useNavigate();
   const { backendUrl,token,setToken } = useAppContext();
   useEffect(() => {
-    // Check if the user is already logged in
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-      navigate('/'); // Redirect to home if already logged in 
-    }
-  }, [navigate, setToken]);
+    if (token) navigate('/');
+  }, [token, navigate]);
 
   const [state, setstate] = useState('Sign Up')
   
@@ -37,17 +32,12 @@ function Login() {
       });
 
       const data = response.data;
-      console.log(data);   
-      if (data.message === "Success") {
-        // Save the token in local storage or context
+      if (data.success) {
         localStorage.setItem('token', data.data.token);
         setToken(data.data.token);
-        toast.success(data.message);
-        // Redirect to home page or any other page
+        toast.success(state === 'Sign Up' ? "Account created successfully!" : "Logged in successfully!");
         navigate('/');
-        
       } else {
-        //console.log("mai harami hun ")
         toast.error(data.message);
       }
     } catch (error) {

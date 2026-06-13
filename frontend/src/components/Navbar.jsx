@@ -5,12 +5,11 @@ import { useNavigate } from 'react-router-dom'
 import useAppContext from '../context/AppContext'
 function Navbar() {
   const navigate = useNavigate();
-  const { token, setToken,userData } = useAppContext();
+  const { token, userData, logout } = useAppContext();
   const [showMenu, setshowMenu] = useState(false);
-  
+
   const logouthandler = () => {
-    setToken(null);
-    localStorage.removeItem('token');
+    logout();
     navigate('/');
   }
 

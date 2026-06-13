@@ -68,7 +68,7 @@ const loginadmin=asyncHandler(async(req,res)=>{
     }
   //  console.log("after verify1ng the email and password  2");
      
-    const token = jwt.sign({ email }, process.env.JWT_SECRET);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
     return res.status(200).json(new ApiResponse(200,{atoken:token},"successfully logged in the admin"));
 
 })

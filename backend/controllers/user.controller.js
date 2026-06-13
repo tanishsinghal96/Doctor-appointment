@@ -46,7 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const newUser = new User(user);
     await newUser.save();
     //generate the access token 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
       
     res.status(201).json(new ApiResponse(201, {token}, "User registered successfully"));
 })
@@ -64,8 +64,7 @@ const loginUser= asyncHandler(async (req, res) => {
     }
 
     //generate the access token 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    console.log(token);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     
     res.status(200).json(new ApiResponse(200,{token},"User logged in successfully",));
 })

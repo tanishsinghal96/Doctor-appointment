@@ -35,8 +35,7 @@ const logindoctor=asyncHandler(async(req,res)=>{
     
     
  
-    const token =jwt.sign({id:doctor._id},process.env.JWT_SECRET);
-    if(!token)  throw new ApiError(500,"error when generating the token")
+    const token = jwt.sign({id: doctor._id}, process.env.JWT_SECRET, { expiresIn: '7d' });
     console.log("token is ",token);
     return res.status(200).json(new ApiResponse(200,{dToken:token},"successfully logged in the doctor"));
   

@@ -26,17 +26,13 @@ const AdminContextProvider=({children})=>{
             }
          });
          const data = response.data;
-         console.log(response);
          if (data.success) {
-            setDoctorsList(data.data); // Assuming the response contains a 'doctors' array
-            console.log("Doctors list fetched successfully:", data.data);
+            setDoctorsList(data.data);
          } else {
             toast.error("Failed to fetch doctors list. Please try again later.");
-            console.log("Failed to fetch doctors list:", data.message);
          }
       } catch (error) {
-         toast.error( error.response.data.message || error.message);
-         console.log("Error fetching doctors list:", error.response.data.message || error.message);
+         toast.error(error.response?.data?.message || error.message);
       }
    };
 
@@ -51,19 +47,14 @@ const AdminContextProvider=({children})=>{
           }
         });
       const data = response.data;
-      if (data.success) { 
-        console.log("Doctor availability updated successfully:", data.data);
+      if (data.success) {
         toast.success('Doctor availability updated successfully');
-        fetchDoctorsList(); // Refresh the list after updating
-      } else {  
+        fetchDoctorsList();
+      } else {
         toast.error('Failed to update availability');
       }
-      
-     
-      fetchDoctorsList(); // Refresh the list
     } catch (error) {
-      console.error("Error updating doctor availability:", error);
-      toast.error('Failed to update availability',error.response?.data?.message || error.message );
+      toast.error(error.response?.data?.message || 'Failed to update availability');
     }
   };
 
