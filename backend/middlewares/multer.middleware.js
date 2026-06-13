@@ -10,6 +10,6 @@ const storage =multer.diskStorage({
     }
 })
 
-export const upload=multer({
+export const upload=multer({//Initializes multer with the custom storge engine
    storage
 })

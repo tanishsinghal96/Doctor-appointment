@@ -7,7 +7,10 @@ import {uploadOnCloudinary} from '../utils/cloudinary.js';
 import jwt from 'jsonwebtoken';
 import Doctor from '../models/doctor.model.js';
 import Appointment from '../models/appointment.model.js';
+import Review from '../models/review.model.js';
 import razorpay from 'razorpay'; // Import Razorpay for payment processing
+import mongoose from 'mongoose';
+
 //not generate the token at the time of registration
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
@@ -45,7 +48,7 @@ const registerUser = asyncHandler(async (req, res) => {
     //generate the access token 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
       
-    res.status(201).json(new ApiResponse("User registered successfully", {user: newUser, token}));
+    res.status(201).json(new ApiResponse(201, {token}, "User registered successfully"));
 })
 
 const loginUser= asyncHandler(async (req, res) => {
@@ -62,6 +65,7 @@ const loginUser= asyncHandler(async (req, res) => {
 
     //generate the access token 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    console.log(token);
     
     res.status(200).json(new ApiResponse(200,{token},"User logged in successfully",));
 })
@@ -300,4 +304,57 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
 })
 
-export {  registerUser,loginUser,getUserProfile,updateUserProfile,bookAppointment,listAppointments,cancelAppointment,paymentRazorpay,verifyPayment};
+//adding the reviews for the doctor
+const addReview = asyncHandler(async (req, res) => {
+    console.log(req.body)
+    const { doctorId, rating, comment } = req.body;
+    const { userId } = req; // Assuming you have middleware to set req.user
+
+    if (!doctorId || !rating || !comment) {
+        throw new ApiError(400, "Please provide all required fields");
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+        throw new ApiError(404, "Doctor not found");
+    }
+
+    const hasAppointment = await Appointment.exists({
+    docId: doctorId,
+    userId,
+    isCompleted: true
+  }); 
+    if (!hasAppointment) {
+        throw new ApiError(403, "You can only review doctors you have had an appointment with");
+    }
+    // Create a new review
+    const review = new Review({
+        doctor: doctorId,
+        patient: userId,
+        rating,
+        comment
+    });
+
+    await review.save();
+    // Update doctor's average rating
+    const stats = await Review.aggregate([
+  { $match: { doctor: new mongoose.Types.ObjectId(doctorId)} },
+  {
+    $group: {
+      _id: '$doctor',
+      avgRating: { $avg: '$rating' },
+      totalReviews: { $sum: 1 }
+    }
+  }
+]);
+console.log("Stats:", stats);
+    if (stats.length > 0) {
+        doctor.rating = stats[0].avgRating;
+        await doctor.save();
+    }
+    // console.log(doctor);
+    
+    res.status(201).json(new ApiResponse(201, review, "Review added successfully"));
+});
+
+export {  registerUser,loginUser,getUserProfile,updateUserProfile,bookAppointment,listAppointments,cancelAppointment,paymentRazorpay,verifyPayment,addReview};

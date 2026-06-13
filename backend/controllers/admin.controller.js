@@ -7,6 +7,7 @@ import doctorModel from "../models/doctor.model.js"
 import validator from "validator"
 import Doctor from '../models/doctor.model.js';
 import Appointment from '../models/appointment.model.js';
+import User from '../models/user.model.js';
 //api for the adding the doctors
 const adddoctor=asyncHandler(async (req,res)=>{
     const {name,email,password,speciality,degree,experience,about,fees,address}=req.body;
@@ -22,9 +23,10 @@ const adddoctor=asyncHandler(async (req,res)=>{
     if(password.length<8){
         throw new ApiError(400,"password is not strong");
     }
+    
     //hashing the password here 
-    const coverLocalPath=req.file?.path;//because we use the single so no arrau getted
-     //now validate the image
+    const coverLocalPath=req.file?.path;//because we use the single so no arrau getted 
+     //now validate the image 
      if(!coverLocalPath) throw new ApiError(400,"doctors image  are required");
      //upload on thw clodinary
      const image=await uploadOnCloudinary(coverLocalPath);
@@ -48,12 +50,7 @@ const adddoctor=asyncHandler(async (req,res)=>{
         });
      
      await newDoctor.save();
-     //check if created or not 
-     const doctor=await doctorModel.findOne({email});
-     console.log(doctor);
-     if(!doctor) throw new ApiError(500,"error occur when saving the document");
-     //after validate return 
-     return res.status(200).json(new ApiResponse(200,doctor,"successfully created/added doctor"))
+     return res.status(201).json(new ApiResponse(201, newDoctor, "successfully created/added doctor"))
 
 });
 
@@ -64,17 +61,14 @@ const loginadmin=asyncHandler(async(req,res)=>{
     //validate both and verified
     //if yes then generate the token and send in the response
     const {email,password}=req.body;
-    console.log(email,password);
     if(!email||!password) throw new ApiError(400,"email and password both are required")
-    console.log("after verify1ng the email and password");
+   // console.log("after verify1ng the email and password");
     if(email.trim()!==process.env.ADMIN_EMAIL||password.trim()!==process.env.ADMIN_PASS){
         throw new ApiError(400,"wrong credentials")
     }
-    console.log("after verify1ng the email and password  2");
+  //  console.log("after verify1ng the email and password  2");
      
-    const token =jwt.sign(email+password,process.env.JWT_SECRET);
-    if(!token)  throw new ApiError(500,"error when generatign the token")
-    console.log(token);
+    const token = jwt.sign({ email }, process.env.JWT_SECRET);
     return res.status(200).json(new ApiResponse(200,{atoken:token},"successfully logged in the admin"));
 
 })
@@ -90,17 +84,11 @@ const getAllDoctors=asyncHandler(async(req,res)=>{
 
 const toggleDoctorAvailability = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;
-  const { available } = req.body;
-  
- 
-  console.log("Toggle Doctor Availability Request:", { doctorId, available });
-  //all print the type of these
-    console.log("Type of doctorId:", typeof doctorId);
-    console.log("Type of available:", typeof available);
+  let { available } = req.body;
+
   if (typeof available === 'string') {
-  available = available.toLowerCase() === 'true';
-}
-  // Find the doctor by ID and update their availability
+    available = available.toLowerCase() === 'true';
+  }
   const doctor = await doctorModel.findByIdAndUpdate(
     doctorId,
     { available },
@@ -119,6 +107,7 @@ const toggleDoctorAvailability = asyncHandler(async (req, res) => {
         
 });
 
+
 const getAllAppointments=asyncHandler(async(req,res)=>{
    const appointment=await  Appointment.find({}).populate("userId","name image gender dob").populate("docId","name image fees");
    if(!appointment){
@@ -129,10 +118,8 @@ const getAllAppointments=asyncHandler(async(req,res)=>{
 
 })
 
- const cancelAppointment = asyncHandler(async (req, res) => {
-   console.log("Cancel Appointment Request Received");
-    const { appointmentId } = req.body; 
-    console.log("Cancel Appointment Request:", appointmentId); 
+const cancelAppointment = asyncHandler(async (req, res) => {
+    const { appointmentId } = req.body;
     if (!appointmentId) {
         throw new ApiError(400, "Please provide appointment ID");
     }
@@ -150,12 +137,10 @@ const getAllAppointments=asyncHandler(async(req,res)=>{
     if (!doctor) {
         throw new ApiError(404, "Doctor not found for this appointment");
     }
-    console.log(appointment);
     //now update the appointment as cancelled
     appointment.cancelled = true;
     appointment.isCompleted = false; // Assuming you want to mark it as not completed
     await appointment.save();
-    console.log("Appointment cancelled:", appointment);
     //now update the doctor model also
     //for the slottime and slotDate we will remove the slot from the slotsBooked
     const slotDate = appointment.slotDate; 
@@ -177,4 +162,34 @@ const getAllAppointments=asyncHandler(async(req,res)=>{
     res.status(200).json(new ApiResponse(200, appointment, "Appointment cancelled successfully"));
 });
 
-export {adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability,getAllAppointments,cancelAppointment};
+
+//get the dashboard data
+const getDashboardData = asyncHandler(async (req, res) => {
+    // Fetch the total number of doctors
+    const totalDoctors = await doctorModel.countDocuments();
+
+    // Fetch the total number of appointments
+    const totalAppointments = await Appointment.countDocuments();
+
+    //total users
+    const totalUsers = await User.countDocuments();
+
+    // Fetch the total earnings (sum of fees from all completed appointments)
+    const totalEarnings = await Appointment.aggregate([
+        { $match: { payment: true } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    //latest appointments shows
+    const appointments=await Appointment.find({}).populate("userId","name image gender dob").populate("docId","name image fees").sort({createdAt:-1}).limit(5);
+    
+    res.status(200).json(new ApiResponse(200, {
+        totalDoctors,
+        totalAppointments,
+        totalUsers,
+        totalEarnings: totalEarnings[0]?.total || 0,
+        appointments
+    }, "Dashboard data fetched successfully"));
+}
+);
+
+export {adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability,getAllAppointments,cancelAppointment,getDashboardData};

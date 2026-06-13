@@ -54,8 +54,19 @@ const doctorSchema=new Schema({
      slots_Booked:{
         type:Object,
         default:{}//for empty initialisation we have to define the minimize false
+     },
+     rating:{
+      type:Number,
+      default:0
      }
-},{minimize:false,timestamps:true});
+},{minimize:false, timestamps:true, toJSON: { virtuals: true }, toObject: { virtuals: true }});
+
+doctorSchema.virtual("reviews",{
+      ref:"Review", //the model name
+      localField:"_id", //the field in the doctor model
+      foreignField:"doctor", //the field in the review model
+      //count:true //to get the count of reviews
+})
 
 
 //it is wrong beacusr we are using the this inside the arrow function so use the normal function
@@ -66,7 +77,8 @@ doctorSchema.pre("save",async function (next){
 })
 //for compare the password is it correct or not 
 doctorSchema.methods.ispasswordCorrect=async function(password) {
-   return await bcrypt.compare(this.password,password);
+   //console.log("password",this.password);
+   return await bcrypt.compare(password,this.password);
 } 
 const doctorModel=mongoose.models.doctor || model("Doctor",doctorSchema);
 //Pluralization only affects the MongoDB collection name, not the key inside mongoose.models.
