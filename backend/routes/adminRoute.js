@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middleware.js"; 
-import { adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability,getAllAppointments,cancelAppointment} from "../controllers/admin.controller.js";
+import { adddoctor,loginadmin,getAllDoctors,toggleDoctorAvailability,getAllAppointments,cancelAppointment,getDashboardData} from "../controllers/admin.controller.js";
 import authAdmin from "../middlewares/authAdmin.js"
 const router=Router();
 router
     .route("/add-doctors")
-    .post(authAdmin,upload.single("docImg"),adddoctor);
+    .post(authAdmin,upload.single("docImg"),adddoctor)
 
 router
     .route("/login")
@@ -22,6 +22,8 @@ router
 router.route("/list-appointments").get(authAdmin,getAllAppointments);
 
 router.route("/cancel-appointment").patch(authAdmin,cancelAppointment);
+
+router.route("/dashboard-data").get(authAdmin,getDashboardData);
 
 
 

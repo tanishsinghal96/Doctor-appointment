@@ -56,6 +56,7 @@ userSchema.methods.comparePassword=async function(password){
 
 
 //Pluralization only affects the MongoDB collection name, not the key inside mongoose.models.
-const userModel=mongoose.models.user ||model("User",userSchema);
-//whenever this is executed then modle created multiple times so we use the || 
+const userModel=mongoose.models.User ||model("User",userSchema);
+//whenever this is executed then modle created multiple times so we use the ||
+
 export default userModel;
